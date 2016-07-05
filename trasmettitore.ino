@@ -1,26 +1,70 @@
-#include <VirtualWire.h>
-#define TX_pin 13
-#define LED_pin 11
-#define PB_pin 3
-int prec_Stato=-1;
-const char *msg_ON = "CIAO CAPOSSELE";
-const char *msg_OFF = "LED_OFF";
 
-void setup()
-{
+#include <VirtualWire.h>
+
+#define MOTORE 7
+#define RED 8
+#define BLUE 10
+#define GREEN 9
+
+#define X_PIN 0
+#define Y_PIN 1
+#define SW_PIN 2
+
+#define TX_pin 13
+
+const char *motor_ON = "MOTOR_ON";
+
+const char *motor_OFF = "MOTOR_OFF";
+
+
+int motore_acceso = 0;
+int lastState = 0;
+void setup() {
   Serial.begin(9600);
-  pinMode(LED_pin,OUTPUT);
-  pinMode(PB_pin,INPUT);
-  digitalWrite(LED_pin, LOW);
   vw_set_tx_pin(TX_pin); // Imposto il pin per la trasmissione
   vw_setup(3000);        // Bits per sec
+  pinMode(SW_PIN, INPUT);
+  pinMode(MOTORE, INPUT);
+digitalWrite(SW_PIN, HIGH);
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(BLUE, OUTPUT);  
+  
+   analogWrite(RED, HIGH);
+    analogWrite(BLUE, 0);
+    analogWrite(GREEN, 0);
 }
 
-void loop()
-{
-  int buttonState =  digitalRead(PB_pin);
-   vw_send((uint8_t *)msg_ON, strlen(msg_ON));
-    Serial.println("Stato:mandato");
-     vw_wait_tx();
- 
+
+void loop(){
+  motore_acceso = digitalRead(MOTORE);
+  set_motor_led();
+
 }
+
+void set_motor_led(){
+  if(motore_acceso == HIGH ){
+    analogWrite(RED, LOW);
+    analogWrite(BLUE, LOW);
+    analogWrite(GREEN, 255);
+    lastState = !lastState;
+    if(!lastState){
+    vw_send((uint8_t *) motor_OFF, strlen(motor_OFF));
+    vw_wait_tx();
+    Serial.println("MOTORE_SPENTO");
+    }else{
+    vw_send((uint8_t *) motor_ON, strlen(motor_ON));
+    vw_wait_tx();
+    Serial.println("MOTORE_ACCESO");  
+      }
+    delay(200);  
+  }else if(motore_acceso == LOW && lastState == 0){
+     analogWrite(RED, 255);
+    analogWrite(BLUE, LOW);
+    analogWrite(GREEN, LOW);
+    
+  }
+  
+}
+
+
