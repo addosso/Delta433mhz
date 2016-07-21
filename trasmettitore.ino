@@ -39,32 +39,42 @@ digitalWrite(SW_PIN, HIGH);
 
 
 void loop(){
-  
-  if(analogRead(Y_PIN) == 0 ){
-  vw_send((uint8_t *) picchiata, strlen(picchiata));
+    
+ 
+   if(digitalRead(SW_PIN) == 0){
+  vw_send((uint8_t *) stay, strlen(stay));
     vw_wait_tx();
-     Serial.println(analogRead(X_PIN));
-  
+   
+    }
+   
+   sendMessageBasedOnPin(analogRead(X_PIN), analogRead(Y_PIN));
+   
+  motore_acceso = digitalRead(MOTORE);
+ set_motor_led();
+
 }
 
-  if(analogRead(Y_PIN) == 1023 ){
-  vw_send((uint8_t *) cabrata, strlen(cabrata));
-    vw_wait_tx();
-     Serial.println(analogRead(X_PIN));
-  
+void sendMessageBasedOnPin(int x_axis, int y_axis){
+  if(y_axis < 10 ){
+  vw_send((uint8_t *) picchiata, strlen(picchiata));
+    vw_wait_tx(); 
 }
- if(analogRead(X_PIN) == 0 ){
+  if(y_axis > 1020 ){
+  vw_send((uint8_t *) cabrata, strlen(cabrata));
+    vw_wait_tx();  
+}
+ if(x_axis < 10 ){
   vw_send((uint8_t *) dx, strlen(dx));
     vw_wait_tx();
 }
 
- if(analogRead(X_PIN) == 1023 ){
+ if(x_axis > 1020 ){
   vw_send((uint8_t *) sx, strlen(sx));
     vw_wait_tx();
 }
 
-  motore_acceso = digitalRead(MOTORE);
- set_motor_led();
+
+
 
 }
 
@@ -83,7 +93,7 @@ void set_motor_led(){
     vw_wait_tx();
     Serial.println("MOTORE_ACCESO");  
       }
-    delay(100);  
+    delay(50);
   }else if(motore_acceso == LOW && lastState == 0){
      analogWrite(RED, 255);
     analogWrite(BLUE, LOW);
